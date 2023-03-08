@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 補足
+  // @id
+    // PKになることを表している
+  // uuid()
+    // UUID spec, version 4 (random)に基づいて、グローバルに一意な識別子を生成
+  // @unique
+    // フィールドの一意性制約を定義
+  // Post[], Comment[]
+    // 1対多: 1Userあたり複数のPost, Commentを持つので、配列の型で定義
+model User {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  password   String
+  authToken  String    @unique
+  created_at DateTime  @default(now())
+  Comment    Comment[]
+  Post       Post[]
+}
+
+// 補足
+  // @relation
+    // リレーションに関するメタ情報を定義
+      // fields: 自身のモデルの項目
+      // references: Postからみた、参照先のモデル(User)の項目をいれる
+model Post {
+  id         Int       @id @default(autoincrement())
+  userId     String
+  content    String
+  created_at DateTime  @default(now())
+  Comment    Comment[]
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  postId     Int
+  content    String
+  created_at DateTime @default(now())
+  post       Post     @relation(fields: [postId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
